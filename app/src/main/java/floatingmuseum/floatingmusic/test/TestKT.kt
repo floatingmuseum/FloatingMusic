@@ -5,6 +5,10 @@ package floatingmuseum.floatingmusic.test
  * Created by Floatingmuseum on 2017/6/2.
  */
 class TestKT {
+    inner class Inner {
+        fun innerFun() = name
+    }
+
     var name: String = ""
     val age: Int
         get() = 5
@@ -15,10 +19,10 @@ class TestKT {
             }
         }
 
-    fun Any?.saySome():String{
-        if (this==null){
+    fun Any?.saySome(): String {
+        if (this == null) {
             return "none"
-        }else {
+        } else {
             return toString()
         }
     }
@@ -34,11 +38,10 @@ class TestKT {
     }
 
     interface Callback {
-        fun method2(){
+        fun method2() {
             println("蛤?")
         }
     }
-
 
 
     class cc(override val year: Int) : Listener, Callback {
@@ -59,7 +62,8 @@ class TestKT {
 
     }
 }
-fun <T> ArrayList<T>.swap(index1:Int,index2:Int){
+
+fun <T> ArrayList<T>.swap(index1: Int, index2: Int) {
     val temp = this[index1]
     this[index1] = this[index2]
     this[index2] = temp

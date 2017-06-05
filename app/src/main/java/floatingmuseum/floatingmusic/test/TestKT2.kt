@@ -7,11 +7,12 @@ package floatingmuseum.floatingmusic.test
 class TestKT2(){
     lateinit var test1:TestKT
     fun testMethod(){
+        val test1 = TestKT.Inner()
+        test1.innerFun()
         val test = TestKT()
         var list = arrayListOf(1,2,3)
         TestUtil.swap(list,1,2)
         list.swap(1,2)
-
         test.setListener(object : TestKT.Listener {
             override val year: Int
                 get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
