@@ -1,12 +1,19 @@
 package floatingmuseum.floatingmusic.test
 
+import java.util.*
+
 
 /**
  * Created by Floatingmuseum on 2017/6/2.
  */
-class TestKT {
+open class TestKT {
     inner class Inner {
+
         fun innerFun() = name
+    }
+
+    fun get(testKT3: TestKT3<String>){
+        val test:TestKT3<Any> = testKT3
     }
 
     var name: String = ""

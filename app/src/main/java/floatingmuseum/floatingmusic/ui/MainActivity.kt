@@ -12,7 +12,10 @@ import android.widget.TextView
 import com.floatingmuseum.androidtest.functions.media.ImageItem
 import com.orhanobut.logger.Logger
 import floatingmuseum.floatingmusic.MusicItem
+import floatingmuseum.floatingmusic.PlayerManager
 import floatingmuseum.floatingmusic.R
+import floatingmuseum.floatingmusic.test.Example
+import floatingmuseum.floatingmusic.test.sum
 import org.jetbrains.anko.find
 
 /**
@@ -22,23 +25,28 @@ class MainActivity : AppCompatActivity() {
 
     val musicList = ArrayList<MusicItem>()
     val imageList = ArrayList<ImageItem>()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        initView()
-        initPlayer()
-
-        scanMusic()
-//        scanImage()
-    }
-
+    lateinit var playerManager: PlayerManager
     lateinit var rvMusicList: RecyclerView
     lateinit var adapter: MusicListAdapter
     lateinit var linearLayoutManager: LinearLayoutManager
     lateinit var player: MediaPlayer
     lateinit var tvPlayingTitle: TextView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        initView()
+        initPlayer()
+
+        val example = Example()
+        var result = example.test2(1,2,3,4,5,6,7,8,10)
+        example.test3()
+        Logger.d("结果:"+result)
+
+        playerManager = PlayerManager.getInstance()
+        scanMusic()
+//        scanImage()
+    }
 
     fun initView() {
         val tvPlayingPlay: TextView = find(R.id.tv_playing_play)
@@ -64,33 +72,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun replay() {
-        if (player.isPlaying) {
-            player.seekTo(0)
-        }
+        playerManager.replay()
     }
 
     fun playMusic(position: Int) {
-        player.reset()
         var item = musicList[position]
-        player.setDataSource(item.uri)
         tvPlayingTitle.text = "Title:" + item.title
-        player.prepare()
-        player.start()
+        playerManager.play(item.uri)
     }
 
     fun pauseMusic() {
-        if (player.isPlaying) {
-            player.pause()
-        }else{
-            player.start()
-        }
+        playerManager.pauseMusic()
     }
 
     fun stopMusic() {
-        if (player.isPlaying) {
-            player.stop()
-            tvPlayingTitle.text = "Title:"
-        }
+        tvPlayingTitle.text = "Title:"
+        playerManager.stopMusic()
     }
 
     /**

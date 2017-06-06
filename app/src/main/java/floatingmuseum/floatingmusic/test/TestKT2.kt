@@ -7,8 +7,8 @@ package floatingmuseum.floatingmusic.test
 class TestKT2(){
     lateinit var test1:TestKT
     fun testMethod(){
-        val test1 = TestKT.Inner()
-        test1.innerFun()
+//        val test1 = TestKT.Inner()
+//        test1.innerFun()
         val test = TestKT()
         var list = arrayListOf(1,2,3)
         TestUtil.swap(list,1,2)
