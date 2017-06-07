@@ -1,4 +1,4 @@
-package floatingmuseum.floatingmusic
+package floatingmuseum.floatingmusic.utils
 
 import android.content.Context
 

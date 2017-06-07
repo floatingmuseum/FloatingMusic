@@ -1,6 +1,5 @@
 package floatingmuseum.floatingmusic.ui
 
-import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -8,20 +7,21 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.widget.SeekBar
 import android.widget.TextView
 import com.floatingmuseum.androidtest.functions.media.ImageItem
 import com.orhanobut.logger.Logger
 import floatingmuseum.floatingmusic.MusicItem
+import floatingmuseum.floatingmusic.MusicListener
 import floatingmuseum.floatingmusic.PlayerManager
 import floatingmuseum.floatingmusic.R
-import floatingmuseum.floatingmusic.test.Example
-import floatingmuseum.floatingmusic.test.sum
+import floatingmuseum.floatingmusic.entity.MusicInfo
 import org.jetbrains.anko.find
 
 /**
  * Created by Floatingmuseum on 2017/5/31.
  */
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(),MusicListener {
 
     val musicList = ArrayList<MusicItem>()
     val imageList = ArrayList<ImageItem>()
@@ -29,22 +29,15 @@ class MainActivity : AppCompatActivity() {
     lateinit var rvMusicList: RecyclerView
     lateinit var adapter: MusicListAdapter
     lateinit var linearLayoutManager: LinearLayoutManager
-    lateinit var player: MediaPlayer
     lateinit var tvPlayingTitle: TextView
+    lateinit var pbMusicProgress: SeekBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initView()
-        initPlayer()
+        initMusic()
 
-        val example = Example()
-        var result = example.test2(1,2,3,4,5,6,7,8,10)
-        example.test3()
-        Logger.d("结果:"+result)
-
-        playerManager = PlayerManager.getInstance()
-        scanMusic()
 //        scanImage()
     }
 
@@ -58,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         tvPlayingPause.setOnClickListener { pauseMusic() }
         tvPlayingStop.setOnClickListener { stopMusic() }
 
+        pbMusicProgress = find(R.id.sb_music_progress)
         rvMusicList = find(R.id.rv_music_list)
         linearLayoutManager = LinearLayoutManager(this)
         adapter = MusicListAdapter(musicList)
@@ -67,8 +61,10 @@ class MainActivity : AppCompatActivity() {
         adapter.setOnItemClickListener { adapter, view, position -> playMusic(position) }
     }
 
-    fun initPlayer() {
-        player = MediaPlayer()
+    fun initMusic() {
+        playerManager = PlayerManager.getInstance()
+        scanMusic()
+
     }
 
     fun replay() {
@@ -159,6 +155,22 @@ class MainActivity : AppCompatActivity() {
 ////        CoverLoader.getInstance().loadThumbnail(uri)
 //        return uri!!
         return ""
+    }
+
+    override fun onMusicProgress(musicInfo: MusicInfo) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onMusicPause(musicInfo: MusicInfo) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onMusicResume(musicInfo: MusicInfo) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onChange(musicInfo: MusicInfo) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     private fun scanImage() {

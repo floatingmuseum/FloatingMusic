@@ -12,10 +12,6 @@ open class TestKT {
         fun innerFun() = name
     }
 
-    fun get(testKT3: TestKT3<String>){
-        val test:TestKT3<Any> = testKT3
-    }
-
     var name: String = ""
     val age: Int
         get() = 5

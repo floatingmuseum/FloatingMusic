@@ -35,6 +35,12 @@
                 android:text="Title:"
                 tools:text="Title:I want love" />
 
+            <SeekBar
+                android:id="@+id/sb_music_progress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
