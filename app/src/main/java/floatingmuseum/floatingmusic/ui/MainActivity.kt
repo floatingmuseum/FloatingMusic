@@ -7,11 +7,11 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
 import com.floatingmuseum.androidtest.functions.media.ImageItem
 import com.orhanobut.logger.Logger
-import floatingmuseum.floatingmusic.MusicItem
 import floatingmuseum.floatingmusic.MusicListener
 import floatingmuseum.floatingmusic.PlayerManager
 import floatingmuseum.floatingmusic.R
@@ -21,38 +21,52 @@ import org.jetbrains.anko.find
 /**
  * Created by Floatingmuseum on 2017/5/31.
  */
-class MainActivity : AppCompatActivity(),MusicListener {
+class MainActivity : AppCompatActivity(), MusicListener {
 
-    val musicList = ArrayList<MusicItem>()
+    val musicList = ArrayList<MusicInfo>()
     val imageList = ArrayList<ImageItem>()
     lateinit var playerManager: PlayerManager
     lateinit var rvMusicList: RecyclerView
     lateinit var adapter: MusicListAdapter
     lateinit var linearLayoutManager: LinearLayoutManager
     lateinit var tvPlayingTitle: TextView
-    lateinit var pbMusicProgress: SeekBar
+    lateinit var tvPlayingArtist: TextView
+    lateinit var sbMusicProgress: SeekBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        playerManager = PlayerManager.getInstance()
+
         initView()
         initMusic()
-
 //        scanImage()
     }
 
     fun initView() {
-        val tvPlayingPlay: TextView = find(R.id.tv_playing_play)
-        val tvPlayingPause: TextView = find(R.id.tv_playing_pause)
-        val tvPlayingStop: TextView = find(R.id.tv_playing_stop)
+        val ivPlayingPrevious: ImageView = find(R.id.iv_playing_previous)
+        val ivPlayingNext: ImageView = find(R.id.iv_playing_next)
+        var ivPlayingStateControl: ImageView = find(R.id.iv_playing_state_control)
+        var ivPlayingMode: ImageView = find(R.id.iv_playing_mode)
+
+        ivPlayingStateControl.setImageResource(if (playerManager.getPlayState().equals(PlayerManager.PLAY_STATE_PLAYING)) R.drawable.music_pause else R.drawable.music_play)
+        when (playerManager.getPlayMode()) {
+            PlayerManager.PLAY_MODE_REPEAT_LIST -> ivPlayingMode.setImageResource(R.drawable.music_repeat_list)
+            PlayerManager.PLAY_MODE_REPEAT_ONE -> ivPlayingMode.setImageResource(R.drawable.music_repeat_one)
+            PlayerManager.PLAY_MODE_SHUFFLE -> ivPlayingMode.setImageResource(R.drawable.music_shuffle)
+        }
+
+        ivPlayingPrevious.setOnClickListener { playerManager.playPrevious() }
+        ivPlayingNext.setOnClickListener { playerManager.playNext() }
+        ivPlayingStateControl.setOnClickListener {
+            controlPlayState()
+        }
+
+        sbMusicProgress = find(R.id.sb_playing_progress)
         tvPlayingTitle = find(R.id.tv_playing_title)
-
-        tvPlayingPlay.setOnClickListener { replay() }
-        tvPlayingPause.setOnClickListener { pauseMusic() }
-        tvPlayingStop.setOnClickListener { stopMusic() }
-
-        pbMusicProgress = find(R.id.sb_music_progress)
+        tvPlayingArtist = find(R.id.tv_playing_artist)
         rvMusicList = find(R.id.rv_music_list)
+
         linearLayoutManager = LinearLayoutManager(this)
         adapter = MusicListAdapter(musicList)
         rvMusicList.adapter = adapter
@@ -61,10 +75,19 @@ class MainActivity : AppCompatActivity(),MusicListener {
         adapter.setOnItemClickListener { adapter, view, position -> playMusic(position) }
     }
 
-    fun initMusic() {
-        playerManager = PlayerManager.getInstance()
-        scanMusic()
+    private fun controlPlayState() {
+        if (playerManager.getCurrentMusicInfo() == null) {
+            return
+        }
+        if (playerManager.getPlayState().equals(PlayerManager.PLAY_STATE_PLAYING)) {
+            playerManager.pause()
+        } else {
+            playerManager.resume()
+        }
+    }
 
+    private fun initMusic() {
+        scanMusic()
     }
 
     fun replay() {
@@ -74,16 +97,8 @@ class MainActivity : AppCompatActivity(),MusicListener {
     fun playMusic(position: Int) {
         var item = musicList[position]
         tvPlayingTitle.text = "Title:" + item.title
+        tvPlayingArtist.text = "Artist:" + item.artist
         playerManager.play(item.uri)
-    }
-
-    fun pauseMusic() {
-        playerManager.pauseMusic()
-    }
-
-    fun stopMusic() {
-        tvPlayingTitle.text = "Title:"
-        playerManager.stopMusic()
     }
 
     /**
@@ -129,7 +144,7 @@ class MainActivity : AppCompatActivity(),MusicListener {
             val fileSize = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.SIZE))
             // 发行时间
             val year = cursor.getInt((cursor.getColumnIndex(MediaStore.Audio.AudioColumns.YEAR)))
-            val music = MusicItem(id, title, artist, album, duration, uri, albumId, coverUri, fileName, fileSize, year)
+            val music = MusicInfo(id, title, artist, album, duration, uri, albumId, coverUri, fileName, fileSize, year)
 
             musicList.add(music)
         }
@@ -137,6 +152,7 @@ class MainActivity : AppCompatActivity(),MusicListener {
         for (item in musicList) {
             Logger.d("Music信息:" + item.toString())
         }
+
         adapter.notifyDataSetChanged()
     }
 

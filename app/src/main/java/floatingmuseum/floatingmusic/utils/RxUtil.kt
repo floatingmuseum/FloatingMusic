@@ -14,28 +14,40 @@ import io.reactivex.schedulers.Schedulers
  * Created by Floatingmuseum on 2017/6/7.
  */
 
-private val schedulerTransFormer = ObservableTransformer<Any, Any> { upstream ->
+private val observableTransFormer = ObservableTransformer<Any, Any> { upstream ->
     upstream.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
 }
 
 /**
- * 线程切换
+ * Observable的线程切换
  */
-fun <T> threadSwitch(): ObservableTransformer<T, T> {
-    return schedulerTransFormer as ObservableTransformer<T, T>
-}
-
 fun <T> observableThreadSwitch(): ObservableTransformer<T, T> {
-    return ObservableTransformer { upstream ->
-        upstream.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-    }
+    return observableTransFormer as ObservableTransformer<T, T>
 }
 
-fun <T> flowableThreadSwitch(): FlowableTransformer<T, T> {
-    return FlowableTransformer { upstream ->
-        upstream.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-    }
+private val flowableTransFormer = FlowableTransformer<Any, Any> { upstream ->
+    upstream.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
 }
+
+/**
+ * Observable的线程切换
+ */
+fun <T> flowableThreadSwitch(): FlowableTransformer<T, T> {
+    return flowableTransFormer as FlowableTransformer<T, T>
+}
+
+//fun <T> observableThreadSwitch(): ObservableTransformer<T, T> {
+//    return ObservableTransformer { upstream ->
+//        upstream.subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//    }
+//}
+//
+//fun <T> flowableThreadSwitch(): FlowableTransformer<T, T> {
+//    return FlowableTransformer { upstream ->
+//        upstream.subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//    }
+//}

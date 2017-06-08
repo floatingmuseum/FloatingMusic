@@ -1,6 +1,7 @@
 package floatingmuseum.floatingmusic
 
 import android.media.MediaPlayer
+import floatingmuseum.floatingmusic.entity.MusicInfo
 import floatingmuseum.floatingmusic.utils.*
 import io.reactivex.Flowable
 import io.reactivex.Observable
@@ -18,12 +19,37 @@ import java.util.concurrent.TimeUnit
 /**
  * Created by Floatingmuseum on 2017/6/2.
  */
-class PlayerManager private constructor() {
+class PlayerManager private constructor() : MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener {
+    override fun onPrepared(mp: MediaPlayer?) {
+        startPlay()
+    }
+
+    override fun onCompletion(mp: MediaPlayer?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
     private val player = MediaPlayer()
+    private var currentPlayMode = PLAY_MODE_REPEAT_LIST
+    private var currentPlayingState = PLAY_STATE_STOP
+    private var currentMusicList = ArrayList<MusicInfo>()
+    private lateinit var currentMusicInfo: MusicInfo
+
+    init {
+        player.setOnPreparedListener(this)
+        player.setOnCompletionListener(this)
+    }
 
     companion object {
+        const val PLAY_MODE_REPEAT_ONE = "repeatOne"
+        const val PLAY_MODE_REPEAT_LIST = "repeatList"
+        const val PLAY_MODE_SHUFFLE = "SHUFFLE"
+
+        const val PLAY_STATE_PLAYING = 0
+        const val PLAY_STATE_PAUSE = 1
+        const val PLAY_STATE_STOP = 2
+
         private val playerManager = PlayerManager()
+
         fun getInstance(): PlayerManager {
             return playerManager
         }
@@ -32,23 +58,34 @@ class PlayerManager private constructor() {
     fun play(uri: String) {
         player.reset()
         player.setDataSource(uri)
-        player.prepare()
-        player.start()
+        player.prepareAsync()
     }
 
-    fun pauseMusic() {
+    private fun startPlay() {
+        player.start()
+        currentPlayingState = PLAY_STATE_PLAYING
+    }
+
+    fun pause() {
         if (player.isPlaying) {
             player.pause()
-        } else {
-            player.start()
         }
     }
 
-    fun stopMusic() {
+
+    fun resume() {
+        startPlay()
+    }
+
+    fun stop() {
         if (player.isPlaying) {
             player.stop()
         }
     }
+
+    fun playPrevious() {}
+
+    fun playNext() {}
 
     fun replay() {
         if (player.isPlaying) {
@@ -56,33 +93,29 @@ class PlayerManager private constructor() {
         }
     }
 
-    fun setMusicListener() {
-        Observable.just("")
-                .compose(threadSwitch<String>())
-                .subscribe(object :Observer<String>{
-                    override fun onComplete() {
-                        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                    }
-
-                    override fun onSubscribe(d: Disposable?) {
-                        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                    }
-
-                    override fun onNext(t: String?) {
-                        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                    }
-
-                    override fun onError(e: Throwable?) {
-                        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                    }
-
-                })
-
-        Flowable.just("")
-                .compose(flowableThreadSwitch<String>())
+    fun refreshMusicList(newMusicList: ArrayList<MusicInfo>) {
+        currentMusicList.clear()
+        currentMusicList.addAll(newMusicList)
     }
 
-    private fun sendProgress() :Int{
+    fun setMusicListener() {
+
+    }
+
+    fun setPlayMode(mode: String) {
+        when (mode) {
+            PLAY_MODE_REPEAT_LIST -> currentPlayMode = PLAY_MODE_REPEAT_LIST
+            PLAY_MODE_REPEAT_ONE -> currentPlayMode = PLAY_MODE_REPEAT_ONE
+            PLAY_MODE_SHUFFLE -> currentPlayMode = PLAY_MODE_SHUFFLE
+        }
+    }
+
+    fun getPlayMode(): String = currentPlayMode
+    fun getPlayState(): Int = currentPlayingState
+
+    fun getCurrentMusicInfo(): MusicInfo = currentMusicInfo
+
+    fun sendProgress(): Int {
         return 2
     }
 

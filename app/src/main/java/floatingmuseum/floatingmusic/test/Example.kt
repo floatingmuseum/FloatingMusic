@@ -1,7 +1,6 @@
 package floatingmuseum.floatingmusic.test
 
 import com.orhanobut.logger.Logger
-import floatingmuseum.floatingmusic.MusicItem
 
 /**
  * Created by Floatingmuseum on 2017/6/6.
