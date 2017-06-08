@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity(), MusicListener {
     lateinit var rvMusicList: RecyclerView
     lateinit var adapter: MusicListAdapter
     lateinit var linearLayoutManager: LinearLayoutManager
+    lateinit var ivPlayingStateControl: ImageView
     lateinit var tvPlayingTitle: TextView
     lateinit var tvPlayingArtist: TextView
     lateinit var sbMusicProgress: SeekBar
@@ -40,13 +41,12 @@ class MainActivity : AppCompatActivity(), MusicListener {
 
         initView()
         initMusic()
-//        scanImage()
     }
 
     fun initView() {
+        ivPlayingStateControl = find(R.id.iv_playing_state_control)
         val ivPlayingPrevious: ImageView = find(R.id.iv_playing_previous)
         val ivPlayingNext: ImageView = find(R.id.iv_playing_next)
-        var ivPlayingStateControl: ImageView = find(R.id.iv_playing_state_control)
         var ivPlayingMode: ImageView = find(R.id.iv_playing_mode)
 
         ivPlayingStateControl.setImageResource(if (playerManager.getPlayState().equals(PlayerManager.PLAY_STATE_PLAYING)) R.drawable.music_pause else R.drawable.music_play)
@@ -76,18 +76,20 @@ class MainActivity : AppCompatActivity(), MusicListener {
     }
 
     private fun controlPlayState() {
-        if (playerManager.getCurrentMusicInfo() == null) {
-            return
-        }
+        if (playerManager.hasMusicInfo()) return
+
         if (playerManager.getPlayState().equals(PlayerManager.PLAY_STATE_PLAYING)) {
             playerManager.pause()
+            ivPlayingStateControl.setImageResource(R.drawable.music_pause)
         } else {
             playerManager.resume()
+            ivPlayingStateControl.setImageResource(R.drawable.music_play)
         }
     }
 
     private fun initMusic() {
         scanMusic()
+//        scanImage()
     }
 
     fun replay() {
@@ -98,6 +100,8 @@ class MainActivity : AppCompatActivity(), MusicListener {
         var item = musicList[position]
         tvPlayingTitle.text = "Title:" + item.title
         tvPlayingArtist.text = "Artist:" + item.artist
+        //不应该在这里
+        ivPlayingStateControl.setImageResource(R.drawable.music_pause)
         playerManager.play(item.uri)
     }
 
@@ -108,6 +112,7 @@ class MainActivity : AppCompatActivity(), MusicListener {
         musicList.clear()
         val path = Environment.getExternalStorageDirectory().absolutePath + "/netease/cloudmusic/Music"
         Logger.d("Music信息...path:" + path)
+
         val cursor = contentResolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null,
                 MediaStore.Audio.Media.DEFAULT_SORT_ORDER)

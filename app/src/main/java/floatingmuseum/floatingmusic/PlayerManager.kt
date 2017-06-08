@@ -25,14 +25,14 @@ class PlayerManager private constructor() : MediaPlayer.OnCompletionListener, Me
     }
 
     override fun onCompletion(mp: MediaPlayer?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        playNext()
     }
 
     private val player = MediaPlayer()
     private var currentPlayMode = PLAY_MODE_REPEAT_LIST
     private var currentPlayingState = PLAY_STATE_STOP
     private var currentMusicList = ArrayList<MusicInfo>()
-    private lateinit var currentMusicInfo: MusicInfo
+    private var currentMusicInfo: MusicInfo? = null
 
     init {
         player.setOnPreparedListener(this)
@@ -113,7 +113,7 @@ class PlayerManager private constructor() : MediaPlayer.OnCompletionListener, Me
     fun getPlayMode(): String = currentPlayMode
     fun getPlayState(): Int = currentPlayingState
 
-    fun getCurrentMusicInfo(): MusicInfo = currentMusicInfo
+    fun hasMusicInfo(): Boolean = currentMusicInfo == null
 
     fun sendProgress(): Int {
         return 2
