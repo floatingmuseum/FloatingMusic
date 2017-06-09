@@ -31,9 +31,10 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     compile 'com.orhanobut:logger:1.15'
-    compile 'com.wanjian:cockroach:0.0.5'
-    compile 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.16'
+//    compile 'com.wanjian:cockroach:0.0.5'
     compile "org.jetbrains.anko:anko:0.10.1"
+    compile 'com.jakewharton:kotterknife:0.1.0-SNAPSHOT'
+    compile 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.16'
     compile 'io.reactivex.rxjava2:rxkotlin:2.0.3'
     compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
 }

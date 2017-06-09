@@ -10,13 +10,14 @@ import android.support.v7.widget.RecyclerView
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
+import butterknife.bindView
 import com.floatingmuseum.androidtest.functions.media.ImageItem
 import com.orhanobut.logger.Logger
 import floatingmuseum.floatingmusic.MusicListener
 import floatingmuseum.floatingmusic.PlayerManager
 import floatingmuseum.floatingmusic.R
 import floatingmuseum.floatingmusic.entity.MusicInfo
-import org.jetbrains.anko.find
+import floatingmuseum.floatingmusic.utils.formatMilliseconds
 
 /**
  * Created by Floatingmuseum on 2017/5/31.
@@ -25,69 +26,87 @@ class MainActivity : AppCompatActivity(), MusicListener {
 
     val musicList = ArrayList<MusicInfo>()
     val imageList = ArrayList<ImageItem>()
-    lateinit var playerManager: PlayerManager
-    lateinit var rvMusicList: RecyclerView
+    val playerManager = PlayerManager.getInstance()
+    val rvMusicList: RecyclerView by bindView(R.id.rv_music_list)
+    val ivPlayingStateControl: ImageView by bindView(R.id.iv_playing_state_control)
+    val tvPlayingTitle: TextView by bindView(R.id.tv_playing_title)
+    val tvPlayingArtist: TextView by bindView(R.id.tv_playing_artist)
+    val tvPlayingDuration: TextView by bindView(R.id.tv_playing_duration)
+    val tvPlayDuration: TextView by bindView(R.id.tv_play_duration)
+    val sbMusicProgress: SeekBar by bindView(R.id.sb_playing_progress)
+    val ivPlayingPrevious: ImageView by bindView(R.id.iv_playing_previous)
+    val ivPlayingNext: ImageView by bindView(R.id.iv_playing_next)
+    val ivPlayingMode: ImageView by bindView(R.id.iv_playing_mode)
     lateinit var adapter: MusicListAdapter
     lateinit var linearLayoutManager: LinearLayoutManager
-    lateinit var ivPlayingStateControl: ImageView
-    lateinit var tvPlayingTitle: TextView
-    lateinit var tvPlayingArtist: TextView
-    lateinit var sbMusicProgress: SeekBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        playerManager = PlayerManager.getInstance()
 
         initView()
         initMusic()
     }
 
     fun initView() {
-        ivPlayingStateControl = find(R.id.iv_playing_state_control)
-        val ivPlayingPrevious: ImageView = find(R.id.iv_playing_previous)
-        val ivPlayingNext: ImageView = find(R.id.iv_playing_next)
-        var ivPlayingMode: ImageView = find(R.id.iv_playing_mode)
-
-        ivPlayingStateControl.setImageResource(if (playerManager.getPlayState().equals(PlayerManager.PLAY_STATE_PLAYING)) R.drawable.music_pause else R.drawable.music_play)
-        when (playerManager.getPlayMode()) {
-            PlayerManager.PLAY_MODE_REPEAT_LIST -> ivPlayingMode.setImageResource(R.drawable.music_repeat_list)
-            PlayerManager.PLAY_MODE_REPEAT_ONE -> ivPlayingMode.setImageResource(R.drawable.music_repeat_one)
-            PlayerManager.PLAY_MODE_SHUFFLE -> ivPlayingMode.setImageResource(R.drawable.music_shuffle)
-        }
-
+        ivPlayingStateControl.setImageResource(if (playerManager.getPlayState() == PlayerManager.PLAY_STATE_PLAYING) R.drawable.music_pause else R.drawable.music_play)
+        initPlayMode(playerManager.getPlayMode())
+        initMusicInfo(playerManager.getMusicInfo())
         ivPlayingPrevious.setOnClickListener { playerManager.playPrevious() }
         ivPlayingNext.setOnClickListener { playerManager.playNext() }
         ivPlayingStateControl.setOnClickListener {
             controlPlayState()
         }
 
-        sbMusicProgress = find(R.id.sb_playing_progress)
-        tvPlayingTitle = find(R.id.tv_playing_title)
-        tvPlayingArtist = find(R.id.tv_playing_artist)
-        rvMusicList = find(R.id.rv_music_list)
+        ivPlayingMode.setOnClickListener { playerManager.changePlayMode() }
+
+        sbMusicProgress.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                Logger.d("SeekBar使用...onProgressChanged:...progress:$progress...fromUser:$fromUser")
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                Logger.d("SeekBar使用...onStartTrackingTouch")
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                Logger.d("SeekBar使用...onStopTrackingTouch")
+            }
+        })
 
         linearLayoutManager = LinearLayoutManager(this)
         adapter = MusicListAdapter(musicList)
         rvMusicList.adapter = adapter
         rvMusicList.layoutManager = linearLayoutManager
         rvMusicList.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
-        adapter.setOnItemClickListener { adapter, view, position -> playMusic(position) }
+        adapter.setOnItemClickListener { _, _, position -> playMusic(position) }
+    }
+
+    private fun initMusicInfo(musicInfo: MusicInfo?) {
+
+    }
+
+    fun initPlayMode(mode: Int) {
+        when (mode) {
+            PlayerManager.PLAY_MODE_REPEAT_LIST -> ivPlayingMode.setImageResource(R.drawable.music_repeat_list)
+            PlayerManager.PLAY_MODE_REPEAT_ONE -> ivPlayingMode.setImageResource(R.drawable.music_repeat_one)
+            PlayerManager.PLAY_MODE_PLAY_LIST -> ivPlayingMode.setImageResource(R.drawable.music_play_list)
+            PlayerManager.PLAY_MODE_SHUFFLE -> ivPlayingMode.setImageResource(R.drawable.music_shuffle)
+        }
     }
 
     private fun controlPlayState() {
-        if (playerManager.hasMusicInfo()) return
+        if (!playerManager.hasMusicInfo()) return
 
-        if (playerManager.getPlayState().equals(PlayerManager.PLAY_STATE_PLAYING)) {
+        if (playerManager.getPlayState() == PlayerManager.PLAY_STATE_PLAYING) {
             playerManager.pause()
-            ivPlayingStateControl.setImageResource(R.drawable.music_pause)
         } else {
             playerManager.resume()
-            ivPlayingStateControl.setImageResource(R.drawable.music_play)
         }
     }
 
     private fun initMusic() {
+        playerManager.setMusicListener(this)
         scanMusic()
 //        scanImage()
     }
@@ -98,11 +117,10 @@ class MainActivity : AppCompatActivity(), MusicListener {
 
     fun playMusic(position: Int) {
         var item = musicList[position]
+        tvPlayDuration.text = formatMilliseconds(item.duration)
         tvPlayingTitle.text = "Title:" + item.title
         tvPlayingArtist.text = "Artist:" + item.artist
-        //不应该在这里
-        ivPlayingStateControl.setImageResource(R.drawable.music_pause)
-        playerManager.play(item.uri)
+        playerManager.play(item)
     }
 
     /**
@@ -158,6 +176,7 @@ class MainActivity : AppCompatActivity(), MusicListener {
             Logger.d("Music信息:" + item.toString())
         }
 
+        playerManager.refreshMusicList(musicList)
         adapter.notifyDataSetChanged()
     }
 
@@ -178,20 +197,34 @@ class MainActivity : AppCompatActivity(), MusicListener {
         return ""
     }
 
+    override fun onMusicPrepared(musicInfo: MusicInfo) {
+        ivPlayingStateControl.setImageResource(R.drawable.music_pause)
+    }
+
     override fun onMusicProgress(musicInfo: MusicInfo) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val progress = (musicInfo.progress.toFloat() / musicInfo.duration.toFloat() * 100).toInt()
+        tvPlayingDuration.text = formatMilliseconds(musicInfo.progress)
+        sbMusicProgress.progress = progress
     }
 
     override fun onMusicPause(musicInfo: MusicInfo) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        ivPlayingStateControl.setImageResource(R.drawable.music_play)
     }
 
     override fun onMusicResume(musicInfo: MusicInfo) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        ivPlayingStateControl.setImageResource(R.drawable.music_pause)
     }
 
-    override fun onChange(musicInfo: MusicInfo) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun onMusicChanged(musicInfo: MusicInfo) {
+        sbMusicProgress.progress = 0
+        tvPlayingTitle.text = "Title:" + musicInfo.title
+        tvPlayingArtist.text = "Artist:" + musicInfo.artist
+        tvPlayingDuration.text = "00:00"
+        tvPlayDuration.text = formatMilliseconds(musicInfo.duration)
+    }
+
+    override fun onPlayModeChanged(mode: Int) {
+        initPlayMode(mode)
     }
 
     private fun scanImage() {
