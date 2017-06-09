@@ -83,7 +83,8 @@ class MainActivity : AppCompatActivity(), MusicListener {
     }
 
     private fun initMusicInfo(musicInfo: MusicInfo?) {
-
+        tvPlayingTitle.text = musicInfo?.title
+        tvPlayingArtist.text = musicInfo?.artist
     }
 
     fun initPlayMode(mode: Int) {
@@ -96,7 +97,7 @@ class MainActivity : AppCompatActivity(), MusicListener {
     }
 
     private fun controlPlayState() {
-        if (!playerManager.hasMusicInfo()) return
+        playerManager.getMusicInfo() ?: return
 
         if (playerManager.getPlayState() == PlayerManager.PLAY_STATE_PLAYING) {
             playerManager.pause()
