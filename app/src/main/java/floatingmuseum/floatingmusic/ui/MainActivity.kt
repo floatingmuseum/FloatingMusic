@@ -24,6 +24,7 @@ import floatingmuseum.floatingmusic.utils.formatMilliseconds
  */
 class MainActivity : AppCompatActivity(), MusicListener {
 
+
     val musicList = ArrayList<MusicInfo>()
     val imageList = ArrayList<ImageItem>()
     val playerManager = PlayerManager.getInstance()
@@ -107,7 +108,7 @@ class MainActivity : AppCompatActivity(), MusicListener {
         }
     }
 
-    private fun initMusic() {
+    fun initMusic() {
         playerManager.setMusicListener(this)
         scanMusic()
 //        scanImage()
@@ -181,6 +182,7 @@ class MainActivity : AppCompatActivity(), MusicListener {
         playerManager.refreshMusicList(musicList)
         adapter.notifyDataSetChanged()
     }
+
 
     /**
      * 查询专辑封面图片uri
