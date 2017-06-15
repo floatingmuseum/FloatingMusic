@@ -43,7 +43,6 @@ class MainActivity : AppCompatActivity(), MusicListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         initView()
         initMusic()
     }
@@ -51,7 +50,8 @@ class MainActivity : AppCompatActivity(), MusicListener {
     fun initView() {
         ivPlayingStateControl.setImageResource(if (playerManager.getPlayState() == PlayerManager.PLAY_STATE_PLAYING) R.drawable.music_pause else R.drawable.music_play)
         initPlayMode(playerManager.getPlayMode())
-        initMusicInfo(playerManager.getMusicInfo())
+        val musicInfo = playerManager.getMusicInfo()
+        musicInfo?.let { initMusicInfo(musicInfo) }
         ivPlayingPrevious.setOnClickListener { playerManager.playPrevious() }
         ivPlayingNext.setOnClickListener { playerManager.playNext() }
         ivPlayingStateControl.setOnClickListener {
@@ -82,8 +82,10 @@ class MainActivity : AppCompatActivity(), MusicListener {
         adapter.setOnItemClickListener { _, _, position -> playMusic(position) }
     }
 
-    private fun initMusicInfo(musicInfo: MusicInfo?) {
-
+    private fun initMusicInfo(musicInfo: MusicInfo) {
+        tvPlayingTitle.text = musicInfo.title
+        tvPlayingArtist.text = musicInfo.artist
+        tvPlayDuration.text = formatMilliseconds(musicInfo.duration)
     }
 
     fun initPlayMode(mode: Int) {
@@ -96,12 +98,12 @@ class MainActivity : AppCompatActivity(), MusicListener {
     }
 
     private fun controlPlayState() {
-        if (!playerManager.hasMusicInfo()) return
-
-        if (playerManager.getPlayState() == PlayerManager.PLAY_STATE_PLAYING) {
-            playerManager.pause()
-        } else {
-            playerManager.resume()
+        playerManager.getMusicInfo().let {
+            if (playerManager.getPlayState() == PlayerManager.PLAY_STATE_PLAYING) {
+                playerManager.pause()
+            } else {
+                playerManager.resume()
+            }
         }
     }
 
